@@ -8,5 +8,6 @@ resource "aws_guardduty_detector" "main" {
     malware_protection {
       scan_ec2_instance_with_findings { ebs_volumes { enable = true } }
     }
+    ebs_volumes { enable = true }
   }
 }
