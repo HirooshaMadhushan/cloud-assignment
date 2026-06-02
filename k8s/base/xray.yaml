@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: xray-daemon
+  namespace: cloudmart-prod
+spec:
+  selector:
+    matchLabels:
+      app: xray-daemon
+  template:
+    metadata:
+      labels:
+        app: xray-daemon
+    spec:
+      containers:
+        - name: xray-daemon
+          image: amazon/aws-xray-daemon
+          ports:
+            - containerPort: 2000
+              protocol: UDP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
