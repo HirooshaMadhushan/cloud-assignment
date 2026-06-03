@@ -25,7 +25,7 @@ resource "aws_cloudwatch_metric_alarm" "product_error_rate" {
 # SNS Topic for alerts
 resource "aws_sns_topic" "alerts" {
   name = "cloudmart-alerts"
-  tags = var.common_tags
+  tags = merge(var.common_tags, { Name = "cloudmart-alerts" })
 }
 
 resource "aws_sns_topic_subscription" "email" {
