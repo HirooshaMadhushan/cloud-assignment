@@ -57,12 +57,14 @@ spec:
             failureThreshold: 3
   strategy:
     canary:
+      # Incremental traffic shift: 20% -> 50% -> 100%
       steps:
         - setWeight: 20
         - pause: { duration: 2m }
         - setWeight: 50
         - pause: { duration: 2m }
         - setWeight: 100
+      # Automated analysis via CloudWatch metrics
       analysis:
         templates:
           - templateName: product-error-rate
