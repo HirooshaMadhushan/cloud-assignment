@@ -6,6 +6,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: notification-service
+  # Scale based on SQS queue depth
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
