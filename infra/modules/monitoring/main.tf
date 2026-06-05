@@ -15,7 +15,7 @@ resource "aws_cloudwatch_metric_alarm" "product_error_rate" {
   namespace           = "CloudMart/Services"
   period              = 300
   statistic           = "Average"
-  threshold           = 5
+  threshold           = 3
   alarm_actions       = [aws_sns_topic.alerts.arn]
   ok_actions          = [aws_sns_topic.alerts.arn]
   dimensions          = { Service = "product-service" }
