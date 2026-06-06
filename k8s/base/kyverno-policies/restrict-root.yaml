@@ -9,7 +9,7 @@ spec:
       match:
         resources:
           kinds: [Pod]
-          namespaces: [cloudmart-prod, cloudmart-staging]
+          namespaces: [cloudmart-prod, cloudmart-staging, kube-system]
       validate:
         message: "Containers must not run as root."
         pattern:
@@ -28,7 +28,7 @@ spec:
       match:
         resources:
           kinds: [Pod]
-          namespaces: [cloudmart-prod, cloudmart-staging]
+          namespaces: [cloudmart-prod, cloudmart-staging, kube-system]
       validate:
         message: "Privileged containers are not allowed."
         pattern:
@@ -48,7 +48,7 @@ spec:
       match:
         resources:
           kinds: [Pod]
-          namespaces: [cloudmart-prod, cloudmart-staging]
+          namespaces: [cloudmart-prod, cloudmart-staging, kube-system]
       validate:
         message: "Images must be pulled from the CloudMart ECR registry only."
         pattern:
