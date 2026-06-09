@@ -71,13 +71,13 @@ async function publishOrderEvent(event) {
 
   if (backend === 'sqs') {
     // TODO: AWS SQS — use @aws-sdk/client-sqs
-    // const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
-    // const client = new SQSClient({ region: process.env.AWS_REGION });
-    // await client.send(new SendMessageCommand({
-    //   QueueUrl: process.env.SQS_QUEUE_URL,
-    //   MessageBody: JSON.stringify(event),
-    // }));
-    console.log('[SQS] Would publish event:', event.type);
+    const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
+    const client = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    await client.send(new SendMessageCommand({
+      QueueUrl: process.env.SQS_QUEUE_URL,
+      MessageBody: JSON.stringify(event),
+    }));
+    console.log('[SQS] Published event:', event.type);
     eventLog.push(event);
   } else if (backend === 'pubsub') {
     // TODO: GCP Pub/Sub — use @google-cloud/pubsub
