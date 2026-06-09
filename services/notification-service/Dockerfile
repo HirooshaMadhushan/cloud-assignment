@@ -1,31 +1,19 @@
-# ---- Stage 1: Install dependencies ----
 FROM node:20-alpine AS builder
-
 WORKDIR /build
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm ci --only=production
 
-# ---- Stage 2: Runtime ----
 FROM node:20-alpine
-
-# Create non-root user
-RUN addgroup -S appuser && adduser -S appuser -G appuser
-
 WORKDIR /app
 
-# Copy dependencies from builder
-COPY --from=builder /build/node_modules ./node_modules
-COPY --from=builder /build/package.json ./
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy application code
+COPY --from=builder /build/node_modules ./node_modules
 COPY src/ ./src/
 
-# Switch to non-root user
 USER appuser
-
-EXPOSE 8004
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:8004/health || exit 1
+# No EXPOSE — no inbound HTTP traffic
+HEALTHCHECK --interval=60s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "process.exit(0)"
 
 CMD ["node", "src/index.js"]
