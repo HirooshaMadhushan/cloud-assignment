@@ -174,12 +174,139 @@ class DynamoDBStore:
     """
 
     def __init__(self):
-        # TODO: import boto3; create dynamodb resource
-        # self.table = boto3.resource('dynamodb').Table(os.environ['DYNAMODB_TABLE'])
-        raise NotImplementedError(
-            "DynamoDB store not implemented yet. "
-            "See the assignment brief Section 3.3 for guidance."
-        )
+        import boto3
+        table_name = os.environ.get('DYNAMODB_TABLE')
+        if not table_name:
+            raise ValueError("DYNAMODB_TABLE environment variable must be set")
+        # Ensure region is correctly fetched from env or fallback
+        region = os.environ.get('AWS_REGION', 'us-east-1')
+        self.table = boto3.resource('dynamodb', region_name=region).Table(table_name)
+
+    def get_all(self, category=None, search=None):
+        if category:
+            from boto3.dynamodb.conditions import Key
+            response = self.table.query(
+                IndexName='CategoryIndex',
+                KeyConditionExpression=Key('category').eq(category)
+            )
+            items = response.get('Items', [])
+        else:
+            response = self.table.scan()
+            items = response.get('Items', [])
+            while 'LastEvaluatedKey' in response:
+                response = self.table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+                items.extend(response.get('Items', []))
+
+        # Convert Decimal to float/int
+        for item in items:
+            item['price'] = float(item['price'])
+            item['stock'] = int(item['stock'])
+
+        if search:
+            q = search.lower()
+            items = [
+                p for p in items
+                if q in p.get("name", "").lower() or q in p.get("description", "").lower()
+            ]
+        return items
+
+    def get_by_id(self, product_id):
+        response = self.table.get_item(Key={'productId': product_id})
+        item = response.get('Item')
+        if item:
+            item['price'] = float(item['price'])
+            item['stock'] = int(item['stock'])
+            # Convert productId back to id for API consistency
+            item['id'] = item.pop('productId')
+        return item
+
+    def create(self, data):
+        from decimal import Decimal
+        product_id = f"prod-{uuid.uuid4().hex[:6]}"
+        item = {
+            "productId": product_id,
+            "name": data["name"],
+            "description": data.get("description", ""),
+            "price": Decimal(str(data["price"])),
+            "category": data.get("category", "general"),
+            "stock": data.get("stock", 0),
+            "imageUrl": data.get("imageUrl", ""),
+            "createdAt": datetime.utcnow().isoformat() + "Z",
+        }
+        self.table.put_item(Item=item)
+        
+        # Return in API format
+        product = dict(item)
+        product['id'] = product.pop('productId')
+        product['price'] = float(product['price'])
+        product['stock'] = int(product['stock'])
+        return product
+
+    def update(self, product_id, data):
+        from decimal import Decimal
+        update_expr = "set updatedAt = :u"
+        expr_values = {":u": datetime.utcnow().isoformat() + "Z"}
+        expr_names = {}
+
+        for key in ["name", "description", "price", "category", "stock", "imageUrl"]:
+            if key in data:
+                attr_name = f"#{key}"
+                attr_val = f":{key}"
+                update_expr += f", {attr_name} = {attr_val}"
+                expr_names[attr_name] = key
+                if key == "price":
+                    expr_values[attr_val] = Decimal(str(data[key]))
+                elif key == "stock":
+                    expr_values[attr_val] = int(data[key])
+                else:
+                    expr_values[attr_val] = data[key]
+
+        try:
+            response = self.table.update_item(
+                Key={'productId': product_id},
+                UpdateExpression=update_expr,
+                ExpressionAttributeValues=expr_values,
+                ExpressionAttributeNames=expr_names,
+                ReturnValues="ALL_NEW"
+            )
+            item = response.get('Attributes')
+            if item:
+                item['price'] = float(item['price'])
+                item['stock'] = int(item['stock'])
+                item['id'] = item.pop('productId')
+            return item
+        except Exception as e:
+            logger.error(f"Error updating product {product_id}: {e}")
+            return None
+
+    def delete(self, product_id):
+        try:
+            response = self.table.delete_item(
+                Key={'productId': product_id},
+                ReturnValues="ALL_OLD"
+            )
+            return 'Attributes' in response
+        except Exception:
+            return False
+
+    def check_stock(self, product_id, quantity):
+        item = self.get_by_id(product_id)
+        if not item:
+            return False
+        return item.get("stock", 0) >= quantity
+
+    def decrement_stock(self, product_id, quantity):
+        try:
+            self.table.update_item(
+                Key={'productId': product_id},
+                UpdateExpression="set stock = stock - :q",
+                ConditionExpression="stock >= :q",
+                ExpressionAttributeValues={":q": quantity}
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to decrement stock for {product_id}: {e}")
+            return False
 
 
 class FirestoreStore:
