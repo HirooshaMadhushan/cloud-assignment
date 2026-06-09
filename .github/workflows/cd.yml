@@ -1,0 +1,90 @@
+name: CD
+
+on:
+  push:
+    branches: [main, develop]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+
+      - name: Deploy to staging via Helm
+        run: |
+          for SERVICE in product-service order-service user-service notification-service frontend; do
+            helm upgrade --install $SERVICE k8s/charts/$SERVICE \
+              --namespace cloudmart-staging \
+              --values k8s/charts/$SERVICE/values-staging.yaml \
+              --set image.tag=${{ github.sha }} \
+              --wait --timeout 5m
+          done
+
+      - name: Smoke tests
+        run: |
+          STAGING_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -f http://${STAGING_URL}/health || exit 1
+          curl -f http://${STAGING_URL}/api/products/health || exit 1
+          curl -f http://${STAGING_URL}/api/orders/health || exit 1
+          curl -f http://${STAGING_URL}/api/users/health || exit 1
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production      # Requires manual approval in GitHub environment settings
+    needs: []
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+
+      - name: Deploy to production via Helm
+        run: |
+          for SERVICE in order-service user-service notification-service frontend; do
+            helm upgrade --install $SERVICE k8s/charts/$SERVICE \
+              --namespace cloudmart-prod \
+              --values k8s/charts/$SERVICE/values-prod.yaml \
+              --set image.tag=${{ github.sha }} \
+              --wait --timeout 5m
+          done
+          # product-service uses Argo Rollouts — trigger via image update
+          kubectl argo rollouts set image product-service \
+            product-service=$ECR_REGISTRY/cloudmart/product-service:${{ github.sha }} \
+            -n cloudmart-prod
+
+      - name: Post-deployment smoke tests
+        run: |
+          PROD_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          for endpoint in /health /api/products/health /api/orders/health /api/users/health; do
+            curl -f https://${PROD_URL}${endpoint} || exit 1
+          done
