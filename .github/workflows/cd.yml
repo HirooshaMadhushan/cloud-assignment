@@ -7,6 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+  HELM_TIMEOUT: 5m
 
 jobs:
   deploy-staging:
@@ -36,7 +37,7 @@ jobs:
               --namespace cloudmart-staging \
               --values k8s/charts/$SERVICE/values-staging.yaml \
               --set image.tag=${{ github.sha }} \
-              --wait --timeout 5m
+              --wait --timeout ${{ env.HELM_TIMEOUT }}
           done
 
       - name: Smoke tests
@@ -75,7 +76,7 @@ jobs:
               --namespace cloudmart-prod \
               --values k8s/charts/$SERVICE/values-prod.yaml \
               --set image.tag=${{ github.sha }} \
-              --wait --timeout 5m
+              --wait --timeout ${{ env.HELM_TIMEOUT }}
           done
           # product-service uses Argo Rollouts — trigger via image update
           kubectl argo rollouts set image product-service \
