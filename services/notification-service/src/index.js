@@ -33,6 +33,8 @@ const notificationLog = [];
 // Email sending abstraction
 // ---------------------------------------------------------------------------
 
+let sesClient = null;
+
 async function sendEmail(to, subject, body) {
   const backend = (process.env.EMAIL_BACKEND || 'console').toLowerCase();
 
@@ -41,12 +43,14 @@ async function sendEmail(to, subject, body) {
   if (backend === 'ses') {
     // TODO: AWS SES — use @aws-sdk/client-ses
     const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
-    const client = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    if (!sesClient) {
+      sesClient = new SESClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    }
     
     // Fallback to a verified test email if FROM_EMAIL is not set properly, though the infra sets up cloudmart.internal
     const fromEmail = process.env.FROM_EMAIL || 'admin@cloudmart.internal';
     
-    await client.send(new SendEmailCommand({
+    await sesClient.send(new SendEmailCommand({
       Source: fromEmail,
       Destination: { ToAddresses: [to] },
       Message: {
@@ -161,16 +165,19 @@ async function pollOrderServiceEvents() {
   }
 }
 
+let sqsClient = null;
+
 async function pollCloudQueue() {
   const backend = (process.env.QUEUE_BACKEND || 'memory').toLowerCase();
 
   if (backend === 'sqs') {
-    // TODO: AWS SQS — use @aws-sdk/client-sqs
     const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } = require('@aws-sdk/client-sqs');
-    const client = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    if (!sqsClient) {
+      sqsClient = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    }
     
     try {
-      const response = await client.send(new ReceiveMessageCommand({
+      const response = await sqsClient.send(new ReceiveMessageCommand({
         QueueUrl: process.env.SQS_QUEUE_URL,
         MaxNumberOfMessages: 10,
         WaitTimeSeconds: 20,
@@ -178,7 +185,7 @@ async function pollCloudQueue() {
       
       for (const msg of response.Messages || []) {
         await processOrderEvent(JSON.parse(msg.Body));
-        await client.send(new DeleteMessageCommand({
+        await sqsClient.send(new DeleteMessageCommand({
           QueueUrl: process.env.SQS_QUEUE_URL,
           ReceiptHandle: msg.ReceiptHandle,
         }));

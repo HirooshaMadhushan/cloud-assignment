@@ -66,14 +66,18 @@ seedOrders.forEach((o) => orders.set(o.id, o));
  * Default: stores in-memory.
  * Students: implement the cloud adapter for your provider.
  */
+let sqsClient = null;
+
 async function publishOrderEvent(event) {
   const backend = (process.env.QUEUE_BACKEND || 'memory').toLowerCase();
 
   if (backend === 'sqs') {
     // TODO: AWS SQS — use @aws-sdk/client-sqs
     const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
-    const client = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
-    await client.send(new SendMessageCommand({
+    if (!sqsClient) {
+      sqsClient = new SQSClient({ region: process.env.AWS_REGION || 'us-east-1' });
+    }
+    await sqsClient.send(new SendMessageCommand({
       QueueUrl: process.env.SQS_QUEUE_URL,
       MessageBody: JSON.stringify(event),
     }));
