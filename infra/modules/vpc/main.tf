@@ -13,7 +13,7 @@ resource "aws_internet_gateway" "igw" {
 
 # Public Subnets
 resource "aws_subnet" "public" {
-  for_each                = { "1a" = "10.0.1.0/24", "1b" = "10.0.2.0/24" }
+  for_each                = { "a" = "10.0.1.0/24", "b" = "10.0.2.0/24" }
   vpc_id                  = aws_vpc.main.id
   cidr_block              = each.value
   availability_zone       = "us-east-1${each.key}"
@@ -26,7 +26,7 @@ resource "aws_subnet" "public" {
 
 # Private App Subnets (EKS nodes)
 resource "aws_subnet" "private_app" {
-  for_each          = { "1a" = "10.0.11.0/24", "1b" = "10.0.12.0/24" }
+  for_each          = { "a" = "10.0.11.0/24", "b" = "10.0.12.0/24" }
   vpc_id            = aws_vpc.main.id
   cidr_block        = each.value
   availability_zone = "us-east-1${each.key}"
@@ -39,7 +39,7 @@ resource "aws_subnet" "private_app" {
 
 # Private Data Subnets (RDS)
 resource "aws_subnet" "private_data" {
-  for_each          = { "1a" = "10.0.21.0/24", "1b" = "10.0.22.0/24" }
+  for_each          = { "a" = "10.0.21.0/24", "b" = "10.0.22.0/24" }
   vpc_id            = aws_vpc.main.id
   cidr_block        = each.value
   availability_zone = "us-east-1${each.key}"
@@ -48,7 +48,7 @@ resource "aws_subnet" "private_data" {
 
 # Elastic IPs for NAT Gateways (one per AZ)
 resource "aws_eip" "nat" {
-  for_each = { "1a" = aws_subnet.public["1a"].id, "1b" = aws_subnet.public["1b"].id }
+  for_each = { "a" = aws_subnet.public["a"].id, "b" = aws_subnet.public["b"].id }
   domain   = "vpc"
   tags     = merge(var.common_tags, { Name = "cloudmart-nat-eip-${each.key}" })
 }

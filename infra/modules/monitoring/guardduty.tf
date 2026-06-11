@@ -1,13 +1,4 @@
-resource "aws_guardduty_detector" "main" {
-  enable = true
-  tags   = var.common_tags
-
-  datasources {
-    s3_logs           { enable = true }
-    kubernetes { audit_logs { enable = true } }
-    malware_protection {
-      scan_ec2_instance_with_findings { ebs_volumes { enable = true } }
-    }
-    ebs_volumes { enable = true }
-  }
-}
+# resource "aws_guardduty_detector" "main" {
+#   enable = false
+#   tags   = var.common_tags
+# }

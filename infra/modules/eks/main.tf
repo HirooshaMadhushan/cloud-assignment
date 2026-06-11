@@ -3,7 +3,15 @@ resource "aws_iam_role" "eks_cluster" {
   name = "cloudmart-eks-cluster-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{ Effect = "Allow" Principal = { Service = "eks.amazonaws.com" } Action = "sts:AssumeRole" }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "eks.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
@@ -29,7 +37,9 @@ resource "aws_eks_cluster" "main" {
 
   encryption_config {
     resources = ["secrets"]
-    provider  { key_arn = var.kms_key_arn }
+    provider {
+      key_arn = var.kms_key_arn
+    }
   }
 
   tags = var.common_tags
@@ -40,7 +50,15 @@ resource "aws_iam_role" "eks_nodes" {
   name = "cloudmart-eks-nodes-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{ Effect = "Allow" Principal = { Service = "ec2.amazonaws.com" } Action = "sts:AssumeRole" }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
@@ -62,15 +80,18 @@ resource "aws_eks_node_group" "main" {
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = values(var.private_app_subnet_ids)
 
-  instance_types = ["t3.medium"]
+  ami_type       = "AL2_x86_64"
+  instance_types = ["t3.small"]
 
   scaling_config {
-    desired_size = 2
-    min_size     = 2
-    max_size     = 6
+    desired_size = 1
+    min_size     = 1
+    max_size     = 2
   }
 
-  update_config { max_unavailable = 1 }
+  update_config {
+    max_unavailable = 1
+  }
 
   # Enable IMDSv2 — harden instance metadata
   launch_template {

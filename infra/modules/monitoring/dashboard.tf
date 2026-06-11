@@ -4,8 +4,15 @@ resource "aws_cloudwatch_dashboard" "cloudmart" {
     widgets = [
       {
         type = "metric"
+        x    = 0
+        y    = 0
+        width  = 12
+        height = 6
         properties = {
-          title  = "CPU per Service"
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "CPU per Service"
           metrics = [
             ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-prod", "PodName", "product-service"],
             ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-prod", "PodName", "order-service"],
@@ -17,8 +24,15 @@ resource "aws_cloudwatch_dashboard" "cloudmart" {
       },
       {
         type = "metric"
+        x    = 0
+        y    = 6
+        width  = 12
+        height = 6
         properties = {
-          title  = "SQS Queue Depth (orders)"
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "SQS Queue Depth (orders)"
           metrics = [["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "cloudmart-orders"]]
           period = 60
           stat   = "Sum"
@@ -26,8 +40,15 @@ resource "aws_cloudwatch_dashboard" "cloudmart" {
       },
       {
         type = "metric"
+        x    = 0
+        y    = 12
+        width  = 12
+        height = 6
         properties = {
-          title  = "RDS Connections"
+          view    = "timeSeries"
+          stacked = false
+          region  = "us-east-1"
+          title   = "RDS Connections"
           metrics = [["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", "cloudmart-postgres"]]
           period = 60
           stat   = "Sum"
