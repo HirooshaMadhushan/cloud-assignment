@@ -1,0 +1,53 @@
+# Build artifacts and dependencies
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+
+# Environment and local config
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Binaries and executables
+*.exe
+*.zip
+helm.exe
+helm.zip
+
+# Temporary directories
+helm-temp/
+tmp/
+temp/
+
+# Generated policy files (created by install scripts)
+alb-iam-policy.json
+cluster-autoscaler-policy.json
+
+# CI/CD
+.github/workflows/secrets.yml
