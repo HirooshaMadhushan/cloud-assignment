@@ -2,7 +2,7 @@
 # Phase 0 Bootstrap Script
 # Setup Terraform state bucket and locking table
 
-GROUP_ID="your-group-id"
+GROUP_ID="cloudmart-dev-2024-ops" # Pre-configured unique ID
 REGION="us-east-1"
 
 # Create S3 bucket for state
