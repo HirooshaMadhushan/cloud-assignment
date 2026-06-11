@@ -30,6 +30,11 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
 
+      - name: Verify cluster access
+        run: |
+          kubectl cluster-info
+          kubectl auth can-i get pods --all-namespaces
+
       - name: Deploy to staging via Helm
         run: |
           for SERVICE in product-service order-service user-service notification-service frontend; do
@@ -42,7 +47,12 @@ jobs:
 
       - name: Smoke tests
         run: |
+          kubectl get nodes -o wide
           STAGING_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          if [ -z "$STAGING_URL" ]; then
+            echo "Failed to get ingress URL"
+            exit 1
+          fi
           curl -f http://${STAGING_URL}/health || exit 1
           curl -f http://${STAGING_URL}/api/products/health || exit 1
           curl -f http://${STAGING_URL}/api/orders/health || exit 1
@@ -69,6 +79,11 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
 
+      - name: Verify cluster access
+        run: |
+          kubectl cluster-info
+          kubectl auth can-i get pods --all-namespaces
+
       - name: Deploy to production via Helm
         run: |
           for SERVICE in order-service user-service notification-service frontend; do
@@ -85,7 +100,12 @@ jobs:
 
       - name: Post-deployment smoke tests
         run: |
+          kubectl get nodes -o wide
           PROD_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          if [ -z "$PROD_URL" ]; then
+            echo "Failed to get ingress URL"
+            exit 1
+          fi
           for endpoint in /health /api/products/health /api/orders/health /api/users/health; do
             curl -f https://${PROD_URL}${endpoint} || exit 1
           done
