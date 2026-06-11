@@ -1,0 +1,19 @@
+# Terraform State
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Terraform Vars
+*.tfvars
+*.tfvars.json
+
+# Local Dev
+.env
+*.log
+
+# Scripts
+*.json
+!bootstrap_tf_state.sh
+!install_alb_controller.sh
+!install_cluster_autoscaler.sh

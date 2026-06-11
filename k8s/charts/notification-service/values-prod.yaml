@@ -1,0 +1,21 @@
+namespace: cloudmart-prod
+
+replicaCount: 2
+
+image:
+  tag: latest
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+config:
+  sqsQueueUrl: "https://sqs.us-east-1.amazonaws.com/<AWS_ACCOUNT_ID>/cloudmart-orders"
+  awsRegion: us-east-1
+
+serviceAccount:
+  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-notification-service-role"

@@ -1,0 +1,5 @@
+admin_cidr      = "0.0.0.0/0"
+db_password     = "CloudMartProdPass2024!"
+ses_domain      = "cloudmart-app.com"
+ses_test_email  = "admin@cloudmart-app.com"
+alert_email     = "alerts@cloudmart-app.com"
