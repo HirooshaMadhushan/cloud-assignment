@@ -2,7 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
-RUN npm ci
+# Use `npm ci` when a lockfile exists, otherwise fall back to `npm install`
+# `npm ci` fails the build if package-lock.json is missing; falling back keeps builds working
+RUN npm ci || npm install --no-audit --no-fund --silent
 COPY . .
 RUN npm run build
 
