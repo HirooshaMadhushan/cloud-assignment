@@ -2,6 +2,10 @@ resource "aws_db_subnet_group" "main" {
   name       = "cloudmart-rds-subnet-group-${var.common_tags["Environment"]}"
   subnet_ids = var.data_subnet_ids
   tags       = var.common_tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_db_instance" "postgres" {

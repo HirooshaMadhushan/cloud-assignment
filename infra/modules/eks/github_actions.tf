@@ -78,13 +78,13 @@ resource "aws_iam_role_policy" "github_k8s_operations" {
 resource "aws_eks_access_entry" "github_actions" {
   cluster_name      = aws_eks_cluster.main.name
   principal_arn     = aws_iam_role.github_actions.arn
-  kubernetes_groups = ["system:masters"]
+  # Removed system:masters as it is invalid via API and covered by policy association
   type              = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "github_actions" {
   cluster_name  = aws_eks_cluster.main.name
-  policy_arn    = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   principal_arn = aws_iam_role.github_actions.arn
 
   access_scope {

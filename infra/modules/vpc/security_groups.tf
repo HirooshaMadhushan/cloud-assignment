@@ -29,6 +29,10 @@ resource "aws_security_group" "alb" {
   }
 
   tags = merge(var.common_tags, { Name = "cloudmart-alb-sg-${var.common_tags["Environment"]}" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # EKS Worker Nodes SG
@@ -78,6 +82,10 @@ resource "aws_security_group" "eks_nodes" {
   }
 
   tags = merge(var.common_tags, { Name = "cloudmart-eks-nodes-sg-${var.common_tags["Environment"]}" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # RDS (PostgreSQL) SG — only EKS nodes on port 5432
@@ -103,6 +111,10 @@ resource "aws_security_group" "rds" {
   }
 
   tags = merge(var.common_tags, { Name = "cloudmart-rds-sg-${var.common_tags["Environment"]}" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Bastion Host SG — SSH from your office IP only
@@ -128,6 +140,10 @@ resource "aws_security_group" "bastion" {
   }
 
   tags = merge(var.common_tags, { Name = "cloudmart-bastion-sg-${var.common_tags["Environment"]}" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # VPC Endpoints SG — HTTPS from private subnets
