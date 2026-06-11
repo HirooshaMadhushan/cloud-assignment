@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudmart-prod
+  labels:
+    environment: prod
+    project: cloudmart
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudmart-staging
+  labels:
+    environment: staging
+    project: cloudmart
