@@ -6,6 +6,6 @@ resource "aws_kms_key" "cloudmart" {
 }
 
 resource "aws_kms_alias" "cloudmart" {
-  name          = "alias/cloudmart"
+  name          = "alias/cloudmart-${var.common_tags["Environment"]}"
   target_key_id = aws_kms_key.cloudmart.key_id
 }

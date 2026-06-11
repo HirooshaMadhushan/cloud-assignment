@@ -1,12 +1,12 @@
 resource "aws_sqs_queue" "orders_dlq" {
-  name                      = "cloudmart-orders-dlq"
+  name                      = "cloudmart-orders-dlq-${var.common_tags["Environment"]}"
   message_retention_seconds = 1209600   # 14 days
   kms_master_key_id         = var.kms_key_arn
   tags                      = var.common_tags
 }
 
 resource "aws_sqs_queue" "orders" {
-  name                       = "cloudmart-orders"
+  name                       = "cloudmart-orders-${var.common_tags["Environment"]}"
   visibility_timeout_seconds = 30
   message_retention_seconds  = 86400
   kms_master_key_id          = var.kms_key_arn

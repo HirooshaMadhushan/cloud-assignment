@@ -1,14 +1,14 @@
 # CloudWatch Container Insights on EKS
 resource "aws_cloudwatch_log_group" "eks_containers" {
   for_each          = toset(["product-service", "order-service", "user-service", "notification-service", "frontend"])
-  name              = "/cloudmart/services/${each.key}"
+  name              = "/cloudmart/${var.common_tags["Environment"]}/services/${each.key}"
   retention_in_days = 30
   tags              = var.common_tags
 }
 
 # Alarm: product-service error rate > 5% over 5 min
 resource "aws_cloudwatch_metric_alarm" "product_error_rate" {
-  alarm_name          = "cloudmart-product-service-error-rate"
+  alarm_name          = "cloudmart-product-service-error-rate-${var.common_tags["Environment"]}"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "5xxErrorRate"
@@ -24,8 +24,8 @@ resource "aws_cloudwatch_metric_alarm" "product_error_rate" {
 
 # SNS Topic for alerts
 resource "aws_sns_topic" "alerts" {
-  name = "cloudmart-alerts"
-  tags = merge(var.common_tags, { Name = "cloudmart-alerts" })
+  name = "cloudmart-alerts-${var.common_tags["Environment"]}"
+  tags = merge(var.common_tags, { Name = "cloudmart-alerts-${var.common_tags["Environment"]}" })
 }
 
 resource "aws_sns_topic_subscription" "email" {
@@ -36,7 +36,7 @@ resource "aws_sns_topic_subscription" "email" {
 
 # Budget alert
 resource "aws_budgets_budget" "monthly" {
-  name         = "cloudmart-monthly-budget"
+  name         = "cloudmart-monthly-budget-${var.common_tags["Environment"]}"
   budget_type  = "COST"
   limit_amount = "50"
   limit_unit   = "USD"
