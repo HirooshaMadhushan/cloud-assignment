@@ -14,7 +14,7 @@ resource "aws_iam_role" "github_actions" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:<your-org>/cloudmart:*"
+          "token.actions.githubusercontent.com:sub" = "repo:HirooshaMadhushan/cloudmart:*"
         }
       }
     }]
