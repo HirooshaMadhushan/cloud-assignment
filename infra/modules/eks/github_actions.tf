@@ -74,21 +74,20 @@ resource "aws_iam_role_policy" "github_k8s_operations" {
   })
 }
 
-# Map GitHub Actions IAM role to cluster's aws-auth ConfigMap
-# Note: This must be done manually with kubectl after Terraform apply:
-# kubectl patch configmap aws-auth -n kube-system --type merge -p '{"data":{"mapRoles":"[{\"rolearn\":\"arn:aws:iam::ACCOUNT:role/cloudmart-github-actions-role\",\"username\":\"github-actions\",\"groups\":[\"system:masters\"]}]"}}'
-# 
-# Or using kubectl apply with a patch file:
-# kubectl apply -f - <<EOF
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: aws-auth
-#   namespace: kube-system
-# data:
-#   mapRoles: |
-#     - rolearn: arn:aws:iam::ACCOUNT:role/cloudmart-github-actions-role
-#       username: github-actions
-#       groups:
-#         - system:masters
-# EOF
+# Map GitHub Actions IAM role to EKS Access Entry
+resource "aws_eks_access_entry" "github_actions" {
+  cluster_name      = aws_eks_cluster.main.name
+  principal_arn     = aws_iam_role.github_actions.arn
+  kubernetes_groups = ["system:masters"]
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "github_actions" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = aws_iam_role.github_actions.arn
+
+  access_scope {
+    type = "cluster"
+  }
+}

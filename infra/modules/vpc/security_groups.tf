@@ -153,6 +153,10 @@ resource "aws_security_group" "vpce" {
   }
 
   tags = merge(var.common_tags, { Name = "cloudmart-vpce-sg-${var.common_tags["Environment"]}" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_cloudwatch_log_group" "flow_logs" {
