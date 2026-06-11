@@ -1,6 +1,6 @@
 # Load Balancer SG — public internet → 80, 443
 resource "aws_security_group" "alb" {
-  name        = "cloudmart-alb-sg"
+  name        = "cloudmart-alb-sg-${var.common_tags["Environment"]}"
   vpc_id      = aws_vpc.main.id
   description = "ALB: allow HTTP/HTTPS from internet"
 
@@ -28,12 +28,12 @@ resource "aws_security_group" "alb" {
     description = "All outbound"
   }
 
-  tags = merge(var.common_tags, { Name = "cloudmart-alb-sg" })
+  tags = merge(var.common_tags, { Name = "cloudmart-alb-sg-${var.common_tags["Environment"]}" })
 }
 
 # EKS Worker Nodes SG
 resource "aws_security_group" "eks_nodes" {
-  name        = "cloudmart-eks-nodes-sg"
+  name        = "cloudmart-eks-nodes-sg-${var.common_tags["Environment"]}"
   vpc_id      = aws_vpc.main.id
   description = "EKS worker nodes: allow ALB to node port range, internal node comms"
 
@@ -77,12 +77,12 @@ resource "aws_security_group" "eks_nodes" {
     description = "All outbound (for NAT/VPC endpoints)"
   }
 
-  tags = merge(var.common_tags, { Name = "cloudmart-eks-nodes-sg" })
+  tags = merge(var.common_tags, { Name = "cloudmart-eks-nodes-sg-${var.common_tags["Environment"]}" })
 }
 
 # RDS (PostgreSQL) SG — only EKS nodes on port 5432
 resource "aws_security_group" "rds" {
-  name        = "cloudmart-rds-sg"
+  name        = "cloudmart-rds-sg-${var.common_tags["Environment"]}"
   vpc_id      = aws_vpc.main.id
   description = "RDS PostgreSQL: only EKS nodes allowed"
 
@@ -102,12 +102,12 @@ resource "aws_security_group" "rds" {
     description = "All outbound"
   }
 
-  tags = merge(var.common_tags, { Name = "cloudmart-rds-sg" })
+  tags = merge(var.common_tags, { Name = "cloudmart-rds-sg-${var.common_tags["Environment"]}" })
 }
 
 # Bastion Host SG — SSH from your office IP only
 resource "aws_security_group" "bastion" {
-  name        = "cloudmart-bastion-sg"
+  name        = "cloudmart-bastion-sg-${var.common_tags["Environment"]}"
   vpc_id      = aws_vpc.main.id
   description = "Bastion: SSH from admin CIDR only"
 
@@ -127,12 +127,12 @@ resource "aws_security_group" "bastion" {
     description = "All outbound"
   }
 
-  tags = merge(var.common_tags, { Name = "cloudmart-bastion-sg" })
+  tags = merge(var.common_tags, { Name = "cloudmart-bastion-sg-${var.common_tags["Environment"]}" })
 }
 
 # VPC Endpoints SG — HTTPS from private subnets
 resource "aws_security_group" "vpce" {
-  name        = "cloudmart-vpce-sg"
+  name        = "cloudmart-vpce-sg-${var.common_tags["Environment"]}"
   vpc_id      = aws_vpc.main.id
   description = "VPC Interface Endpoints: HTTPS from private subnets"
 
@@ -152,11 +152,11 @@ resource "aws_security_group" "vpce" {
     description = "All outbound"
   }
 
-  tags = merge(var.common_tags, { Name = "cloudmart-vpce-sg" })
+  tags = merge(var.common_tags, { Name = "cloudmart-vpce-sg-${var.common_tags["Environment"]}" })
 }
 
 resource "aws_cloudwatch_log_group" "flow_logs" {
-  name              = "/aws/vpc/cloudmart-flow-logs"
+  name              = "/aws/vpc/cloudmart-flow-logs-${var.common_tags["Environment"]}"
   retention_in_days = 30
   tags              = var.common_tags
 }
@@ -166,11 +166,11 @@ resource "aws_flow_log" "main" {
   traffic_type    = "ALL"
   iam_role_arn    = aws_iam_role.flow_logs.arn
   log_destination = aws_cloudwatch_log_group.flow_logs.arn
-  tags            = merge(var.common_tags, { Name = "cloudmart-flow-log" })
+  tags            = merge(var.common_tags, { Name = "cloudmart-flow-log-${var.common_tags["Environment"]}" })
 }
 
 resource "aws_iam_role" "flow_logs" {
-  name = "cloudmart-vpc-flow-logs-role"
+  name = "cloudmart-vpc-flow-logs-role-${var.common_tags["Environment"]}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -187,7 +187,7 @@ resource "aws_iam_role" "flow_logs" {
 }
 
 resource "aws_iam_role_policy" "flow_logs" {
-  name = "cloudmart-vpc-flow-logs-policy"
+  name = "cloudmart-vpc-flow-logs-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.flow_logs.id
 
   policy = jsonencode({

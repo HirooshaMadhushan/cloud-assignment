@@ -5,7 +5,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 resource "aws_iam_role" "github_actions" {
-  name = "cloudmart-github-actions-role"
+  name = "cloudmart-github-actions-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -29,7 +29,7 @@ resource "aws_iam_role_policy_attachment" "github_ecr" {
 
 # EKS cluster access for GitHub Actions
 resource "aws_iam_role_policy" "github_eks" {
-  name = "cloudmart-github-actions-eks-policy"
+  name = "cloudmart-github-actions-eks-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.github_actions.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -56,7 +56,7 @@ resource "aws_iam_role_policy" "github_eks" {
 
 # Allow kubectl and helm operations
 resource "aws_iam_role_policy" "github_k8s_operations" {
-  name = "cloudmart-github-actions-k8s-policy"
+  name = "cloudmart-github-actions-k8s-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.github_actions.id
   policy = jsonencode({
     Version = "2012-10-17"

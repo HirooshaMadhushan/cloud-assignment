@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "rds_credentials" {
-  name       = "cloudmart/rds/user-service"
+  name       = "cloudmart/${var.common_tags["Environment"]}/rds/user-service"
   kms_key_id = var.kms_key_arn
   tags       = var.common_tags
 }
@@ -16,7 +16,7 @@ resource "aws_secretsmanager_secret_version" "rds_credentials" {
 }
 
 resource "aws_secretsmanager_secret" "ses_credentials" {
-  name       = "cloudmart/ses/smtp"
+  name       = "cloudmart/${var.common_tags["Environment"]}/ses/smtp"
   kms_key_id = var.kms_key_arn
   tags       = var.common_tags
 }

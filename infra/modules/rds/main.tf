@@ -1,11 +1,11 @@
 resource "aws_db_subnet_group" "main" {
-  name       = "cloudmart-rds-subnet-group"
+  name       = "cloudmart-rds-subnet-group-${var.common_tags["Environment"]}"
   subnet_ids = var.data_subnet_ids
   tags       = var.common_tags
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier             = "cloudmart-postgres"
+  identifier             = "cloudmart-postgres-${var.common_tags["Environment"]}"
   engine                 = "postgres"
   engine_version         = "15"
   instance_class         = "db.t3.micro"
@@ -39,7 +39,7 @@ resource "aws_db_instance" "postgres" {
 }
 
 resource "aws_iam_role" "rds_monitoring" {
-  name = "cloudmart-rds-monitoring-role"
+  name = "cloudmart-rds-monitoring-role-${var.common_tags["Environment"]}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

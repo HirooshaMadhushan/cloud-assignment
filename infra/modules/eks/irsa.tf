@@ -4,7 +4,7 @@ locals {
 
 # product-service: DynamoDB read/write on products table only
 resource "aws_iam_role" "product_service" {
-  name = "cloudmart-product-service-role"
+  name = "cloudmart-product-service-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -13,7 +13,7 @@ resource "aws_iam_role" "product_service" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-prod:product-service"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-${var.common_tags["Environment"]}:product-service"
         }
       }
     }]
@@ -21,7 +21,7 @@ resource "aws_iam_role" "product_service" {
 }
 
 resource "aws_iam_role_policy" "product_service" {
-  name = "cloudmart-product-service-policy"
+  name = "cloudmart-product-service-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.product_service.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -35,7 +35,7 @@ resource "aws_iam_role_policy" "product_service" {
 
 # order-service: SQS send/receive on orders queue only
 resource "aws_iam_role" "order_service" {
-  name = "cloudmart-order-service-role"
+  name = "cloudmart-order-service-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -44,7 +44,7 @@ resource "aws_iam_role" "order_service" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-prod:order-service"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-${var.common_tags["Environment"]}:order-service"
         }
       }
     }]
@@ -52,7 +52,7 @@ resource "aws_iam_role" "order_service" {
 }
 
 resource "aws_iam_role_policy" "order_service" {
-  name = "cloudmart-order-service-policy"
+  name = "cloudmart-order-service-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.order_service.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -66,7 +66,7 @@ resource "aws_iam_role_policy" "order_service" {
 
 # notification-service: SQS receive/delete + SES send
 resource "aws_iam_role" "notification_service" {
-  name = "cloudmart-notification-service-role"
+  name = "cloudmart-notification-service-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -75,7 +75,7 @@ resource "aws_iam_role" "notification_service" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-prod:notification-service"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-${var.common_tags["Environment"]}:notification-service"
         }
       }
     }]
@@ -83,7 +83,7 @@ resource "aws_iam_role" "notification_service" {
 }
 
 resource "aws_iam_role_policy" "notification_service" {
-  name = "cloudmart-notification-service-policy"
+  name = "cloudmart-notification-service-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.notification_service.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -104,7 +104,7 @@ resource "aws_iam_role_policy" "notification_service" {
 
 # user-service: Secrets Manager read-only on RDS credentials secret only
 resource "aws_iam_role" "user_service" {
-  name = "cloudmart-user-service-role"
+  name = "cloudmart-user-service-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -113,7 +113,7 @@ resource "aws_iam_role" "user_service" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-prod:user-service"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:cloudmart-${var.common_tags["Environment"]}:user-service"
         }
       }
     }]
@@ -121,7 +121,7 @@ resource "aws_iam_role" "user_service" {
 }
 
 resource "aws_iam_role_policy" "user_service" {
-  name = "cloudmart-user-service-policy"
+  name = "cloudmart-user-service-policy-${var.common_tags["Environment"]}"
   role = aws_iam_role.user_service.id
   policy = jsonencode({
     Version = "2012-10-17"

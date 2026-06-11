@@ -1,5 +1,5 @@
 resource "aws_wafv2_web_acl" "cloudmart" {
-  name  = "cloudmart-waf"
+  name  = "cloudmart-waf-${var.common_tags["Environment"]}"
   scope = "REGIONAL"
 
   default_action {

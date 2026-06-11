@@ -1,6 +1,6 @@
 # EKS Cluster IAM Role
 resource "aws_iam_role" "eks_cluster" {
-  name = "cloudmart-eks-cluster-role"
+  name = "cloudmart-eks-cluster-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -22,8 +22,8 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 
 # EKS Cluster
 resource "aws_eks_cluster" "main" {
-  name     = "cloudmart-eks"
-  version  = "1.29"
+  name     = "cloudmart-eks-${var.common_tags["Environment"]}"
+  version  = "1.30"
   role_arn = aws_iam_role.eks_cluster.arn
 
   vpc_config {
@@ -47,7 +47,7 @@ resource "aws_eks_cluster" "main" {
 
 # EKS Node Group IAM Role
 resource "aws_iam_role" "eks_nodes" {
-  name = "cloudmart-eks-nodes-role"
+  name = "cloudmart-eks-nodes-role-${var.common_tags["Environment"]}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -76,7 +76,7 @@ resource "aws_iam_role_policy_attachment" "eks_worker_node" {
 # Managed Node Group
 resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
-  node_group_name = "cloudmart-nodes"
+  node_group_name = "cloudmart-nodes-${var.common_tags["Environment"]}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = values(var.private_app_subnet_ids)
 
