@@ -28,12 +28,23 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+        run: |
+          aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+          echo "Kubeconfig updated successfully"
 
       - name: Verify cluster access
         run: |
+          echo "=== Checking AWS credentials ==="
+          aws sts get-caller-identity
+          echo ""
+          echo "=== Cluster connectivity check ==="
           kubectl cluster-info
+          echo ""
+          echo "=== Verifying authentication permissions ==="
           kubectl auth can-i get pods --all-namespaces
+          echo ""
+          echo "=== Cluster nodes ==="
+          kubectl get nodes -o wide
 
       - name: Deploy to staging via Helm
         run: |
@@ -77,12 +88,23 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+        run: |
+          aws eks update-kubeconfig --name cloudmart-eks --region $AWS_REGION
+          echo "Kubeconfig updated successfully"
 
       - name: Verify cluster access
         run: |
+          echo "=== Checking AWS credentials ==="
+          aws sts get-caller-identity
+          echo ""
+          echo "=== Cluster connectivity check ==="
           kubectl cluster-info
+          echo ""
+          echo "=== Verifying authentication permissions ==="
           kubectl auth can-i get pods --all-namespaces
+          echo ""
+          echo "=== Cluster nodes ==="
+          kubectl get nodes -o wide
 
       - name: Deploy to production via Helm
         run: |
