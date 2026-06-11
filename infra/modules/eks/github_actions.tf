@@ -75,38 +75,20 @@ resource "aws_iam_role_policy" "github_k8s_operations" {
 }
 
 # Map GitHub Actions IAM role to cluster's aws-auth ConfigMap
-data "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
-}
-
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
-
-  data = {
-    mapRoles = yamlencode(concat(
-      # Preserve existing node role mapping
-      try(
-        yamldecode(data.kubernetes_config_map.aws_auth.data.mapRoles),
-        []
-      ),
-      # Add GitHub Actions role
-      [{
-        rolearn  = aws_iam_role.github_actions.arn
-        username = "github-actions"
-        groups   = ["system:masters"]  # Full cluster access for CI/CD
-      }]
-    ))
-  }
-
-  lifecycle {
-    ignore_changes = [data]
-  }
-
-  depends_on = [aws_eks_cluster.main]
-}
+# Note: This must be done manually with kubectl after Terraform apply:
+# kubectl patch configmap aws-auth -n kube-system --type merge -p '{"data":{"mapRoles":"[{\"rolearn\":\"arn:aws:iam::ACCOUNT:role/cloudmart-github-actions-role\",\"username\":\"github-actions\",\"groups\":[\"system:masters\"]}]"}}'
+# 
+# Or using kubectl apply with a patch file:
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: aws-auth
+#   namespace: kube-system
+# data:
+#   mapRoles: |
+#     - rolearn: arn:aws:iam::ACCOUNT:role/cloudmart-github-actions-role
+#       username: github-actions
+#       groups:
+#         - system:masters
+# EOF
