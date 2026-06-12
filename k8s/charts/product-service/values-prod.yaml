@@ -19,3 +19,6 @@ config:
 
 serviceAccount:
   irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-product-service-role"
+
+rollout:
+  enabled: true

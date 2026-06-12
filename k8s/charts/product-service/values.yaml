@@ -30,3 +30,6 @@ serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml
 
 namespace: cloudmart-prod
+
+rollout:
+  enabled: false
