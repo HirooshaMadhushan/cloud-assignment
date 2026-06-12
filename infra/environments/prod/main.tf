@@ -63,6 +63,17 @@ module "eks" {
   rds_secret_arn         = module.secrets.rds_secret_arn
 }
 
+data "aws_eks_cluster_auth" "main" {
+  name = module.eks.cluster_name
+}
+
+module "kubernetes_namespaces" {
+  source                 = "../../modules/kubernetes"
+  cluster_endpoint       = module.eks.cluster_endpoint
+  cluster_ca_certificate = module.eks.cluster_ca_certificate
+  cluster_token          = data.aws_eks_cluster_auth.main.token
+}
+
 module "monitoring" {
   source      = "../../modules/monitoring"
   common_tags = var.common_tags
