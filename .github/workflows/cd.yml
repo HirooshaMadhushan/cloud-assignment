@@ -50,6 +50,14 @@ jobs:
           echo "=== Cluster nodes ==="
           kubectl get nodes -o wide
 
+      - name: Install Argo Rollouts CRDs
+        run: |
+          echo "Installing Argo Rollouts CRDs..."
+          kubectl create namespace argo-rollouts --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+          echo "Waiting for Argo Rollouts deployment to be ready..."
+          kubectl rollout status deployment/argo-rollouts -n argo-rollouts --timeout=5m || true
+
       - name: Deploy to staging via Helm
         run: |
           for SERVICE in product-service order-service user-service notification-service frontend; do
@@ -128,6 +136,14 @@ jobs:
           echo ""
           echo "=== Cluster nodes ==="
           kubectl get nodes -o wide
+
+      - name: Install Argo Rollouts CRDs
+        run: |
+          echo "Installing Argo Rollouts CRDs..."
+          kubectl create namespace argo-rollouts --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+          echo "Waiting for Argo Rollouts deployment to be ready..."
+          kubectl rollout status deployment/argo-rollouts -n argo-rollouts --timeout=5m || true
 
       - name: Create production namespace if not exists
         run: |
