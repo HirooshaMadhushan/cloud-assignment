@@ -53,7 +53,7 @@ jobs:
               --namespace cloudmart-staging \
               --values k8s/charts/$SERVICE/values-staging.yaml \
               --set image.tag=${{ github.sha }} \
-              --wait --timeout ${{ env.HELM_TIMEOUT }}
+              --wait --atomic --timeout ${{ env.HELM_TIMEOUT }}
           done
 
       - name: Smoke tests
@@ -118,7 +118,7 @@ jobs:
               --namespace cloudmart-prod \
               --values k8s/charts/$SERVICE/values-prod.yaml \
               --set image.tag=${{ github.sha }} \
-              --wait --timeout ${{ env.HELM_TIMEOUT }}
+              --wait --atomic --timeout ${{ env.HELM_TIMEOUT }}
           done
           # product-service uses Argo Rollouts — trigger via image update
           kubectl argo rollouts set image product-service \
