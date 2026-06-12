@@ -27,13 +27,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role-staging
           aws-region: ${{ env.AWS_REGION }}
 
-<<<<<<< HEAD
-=======
       - name: Inject Secrets into Helm Values
         run: |
           find k8s/charts -name "values*.yaml" -exec sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" {} +
 
->>>>>>> feature/randil-persistence
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name cloudmart-eks-staging --region $AWS_REGION
@@ -94,13 +91,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role-prod
           aws-region: ${{ env.AWS_REGION }}
 
-<<<<<<< HEAD
-=======
       - name: Inject Secrets into Helm Values
         run: |
           find k8s/charts -name "values*.yaml" -exec sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" {} +
 
->>>>>>> feature/randil-persistence
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name cloudmart-eks-prod --region $AWS_REGION
