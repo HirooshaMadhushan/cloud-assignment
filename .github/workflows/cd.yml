@@ -27,6 +27,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role-staging
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Inject Secrets into Helm Values
+        run: |
+          find k8s/charts -name "values*.yaml" -exec sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" {} +
+
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name cloudmart-eks-staging --region $AWS_REGION
@@ -52,6 +56,7 @@ jobs:
             helm delete $SERVICE -n cloudmart-staging --ignore-not-found || true
             helm install $SERVICE k8s/charts/$SERVICE \
               --namespace cloudmart-staging \
+              --create-namespace \
               --values k8s/charts/$SERVICE/values-staging.yaml \
               --set image.tag=${{ github.sha }} \
               --wait --atomic --timeout ${{ env.HELM_TIMEOUT }}
@@ -59,12 +64,25 @@ jobs:
 
       - name: Smoke tests
         run: |
-          kubectl get nodes -o wide
-          STAGING_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "Waiting for LoadBalancer hostname..."
+          for i in {1..20}; do
+            STAGING_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ ! -z "$STAGING_URL" ]; then
+              break
+            fi
+            echo "Waiting for ALB..."
+            sleep 15
+          done
+
           if [ -z "$STAGING_URL" ]; then
-            echo "Failed to get ingress URL"
+            echo "Failed to get ingress URL after 5 minutes"
             exit 1
           fi
+          
+          echo "Staging URL: http://${STAGING_URL}"
+          # Give ALB a moment to register targets
+          sleep 30
+          
           curl -f http://${STAGING_URL}/health || exit 1
           curl -f http://${STAGING_URL}/api/products/health || exit 1
           curl -f http://${STAGING_URL}/api/orders/health || exit 1
@@ -87,6 +105,10 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cloudmart-github-actions-role-prod
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Inject Secrets into Helm Values
+        run: |
+          find k8s/charts -name "values*.yaml" -exec sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" {} +
 
       - name: Update kubeconfig
         run: |
@@ -114,27 +136,36 @@ jobs:
 
       - name: Deploy to production via Helm
         run: |
-          for SERVICE in order-service user-service notification-service frontend; do
-            helm delete $SERVICE -n cloudmart-prod --ignore-not-found || true
-            helm install $SERVICE k8s/charts/$SERVICE \
+          for SERVICE in product-service order-service user-service notification-service frontend; do
+            helm upgrade --install $SERVICE k8s/charts/$SERVICE \
               --namespace cloudmart-prod \
+              --create-namespace \
               --values k8s/charts/$SERVICE/values-prod.yaml \
               --set image.tag=${{ github.sha }} \
               --wait --atomic --timeout ${{ env.HELM_TIMEOUT }}
           done
-          # product-service uses Argo Rollouts — trigger via image update
-          kubectl argo rollouts set image product-service \
-            product-service=$ECR_REGISTRY/cloudmart/product-service:${{ github.sha }} \
-            -n cloudmart-prod
 
       - name: Post-deployment smoke tests
         run: |
-          kubectl get nodes -o wide
-          PROD_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "Waiting for LoadBalancer hostname..."
+          for i in {1..20}; do
+            PROD_URL=$(kubectl get ingress cloudmart-ingress -n cloudmart-prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ ! -z "$PROD_URL" ]; then
+              break
+            fi
+            echo "Waiting for ALB..."
+            sleep 15
+          done
+
           if [ -z "$PROD_URL" ]; then
-            echo "Failed to get ingress URL"
+            echo "Failed to get ingress URL after 5 minutes"
             exit 1
           fi
+
+          echo "Production URL: https://${PROD_URL}"
+          # Give ALB a moment to register targets
+          sleep 30
+
           for endpoint in /health /api/products/health /api/orders/health /api/users/health; do
             curl -f https://${PROD_URL}${endpoint} || exit 1
           done

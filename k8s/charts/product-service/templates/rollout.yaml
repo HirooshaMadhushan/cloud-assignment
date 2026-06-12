@@ -1,3 +1,4 @@
+{{- if .Values.rollout.enabled -}}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -98,3 +99,4 @@ spec:
                 period: 60
                 stat: Average
       successCondition: result[0] <= 1   # Halt if error rate > 1%
+{{- end -}}
