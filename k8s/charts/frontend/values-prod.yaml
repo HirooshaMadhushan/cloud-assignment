@@ -1,0 +1,18 @@
+namespace: cloudmart-prod
+
+replicaCount: 2
+
+image:
+  tag: latest
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+ingress:
+  certificateArn: "arn:aws:acm:us-east-1:<AWS_ACCOUNT_ID>:certificate/prod-cert"
+  wafAclArn: "arn:aws:wafv2:us-east-1:<AWS_ACCOUNT_ID>:regional/webacl/cloudmart-waf/id"

@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/<your-org>/cloudmart.git
+    repoURL: https://github.com/HirooshaMadhushan/cloud-assignment.git
     targetRevision: main
     path: k8s/charts
     helm:
@@ -30,7 +30,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/<your-org>/cloudmart.git
+    repoURL: https://github.com/HirooshaMadhushan/cloud-assignment.git
     targetRevision: develop
     path: k8s/charts
     helm:
