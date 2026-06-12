@@ -49,7 +49,8 @@ jobs:
       - name: Deploy to staging via Helm
         run: |
           for SERVICE in product-service order-service user-service notification-service frontend; do
-            helm upgrade --install $SERVICE k8s/charts/$SERVICE \
+            helm delete $SERVICE -n cloudmart-staging --ignore-not-found || true
+            helm install $SERVICE k8s/charts/$SERVICE \
               --namespace cloudmart-staging \
               --values k8s/charts/$SERVICE/values-staging.yaml \
               --set image.tag=${{ github.sha }} \
@@ -114,7 +115,8 @@ jobs:
       - name: Deploy to production via Helm
         run: |
           for SERVICE in order-service user-service notification-service frontend; do
-            helm upgrade --install $SERVICE k8s/charts/$SERVICE \
+            helm delete $SERVICE -n cloudmart-prod --ignore-not-found || true
+            helm install $SERVICE k8s/charts/$SERVICE \
               --namespace cloudmart-prod \
               --values k8s/charts/$SERVICE/values-prod.yaml \
               --set image.tag=${{ github.sha }} \
