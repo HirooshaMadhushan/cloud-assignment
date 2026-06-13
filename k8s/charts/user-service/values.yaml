@@ -24,6 +24,7 @@ hpa:
 
 config:
   awsRegion: us-east-1
+  rdsSecretName: cloudmart/prod/rds/user-service
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml
