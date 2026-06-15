@@ -15,7 +15,7 @@ WORKDIR /usr/share/nginx/html
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN chown -R appuser:appgroup /usr/share/nginx/html /var/cache/nginx /var/run /var/log/nginx
 
-COPY --from=builder /build/dist .
+COPY --from=builder /build/build .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 USER appuser
