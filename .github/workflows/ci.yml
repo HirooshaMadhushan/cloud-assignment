@@ -74,22 +74,22 @@ jobs:
       - name: Build image
         working-directory: services/${{ matrix.service }}
         run: |
-          docker build -t $ECR_REGISTRY/cloudmart-staging/${{ matrix.service }}:${{ github.sha }} .
+          docker build -t $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }} .
 
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.ECR_REGISTRY }}/cloudmart-staging/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.ECR_REGISTRY }}/cloudmart/${{ matrix.service }}:${{ github.sha }}
           format: table
           exit-code: 0          # Do not fail pipeline on vulnerabilities for now
           severity: CRITICAL
 
       - name: Push to ECR
         run: |
-          docker push $ECR_REGISTRY/cloudmart-staging/${{ matrix.service }}:${{ github.sha }}
-          docker tag $ECR_REGISTRY/cloudmart-staging/${{ matrix.service }}:${{ github.sha }} \
-                     $ECR_REGISTRY/cloudmart-staging/${{ matrix.service }}:latest
-          docker push $ECR_REGISTRY/cloudmart-staging/${{ matrix.service }}:latest
+          docker push $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }}
+          docker tag $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }} \
+                     $ECR_REGISTRY/cloudmart/${{ matrix.service }}:latest
+          docker push $ECR_REGISTRY/cloudmart/${{ matrix.service }}:latest
 
   validate-manifests:
     name: Validate K8s Manifests
