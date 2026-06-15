@@ -191,16 +191,19 @@ def safe_user(user):
 
 
 @app.route("/health")
+@app.route("/api/users/health")
 def health():
     return jsonify({"status": "healthy", "service": "user-service"})
 
 
 @app.route("/ready")
+@app.route("/api/users/ready")
 def ready():
     return jsonify({"status": "ready", "service": "user-service"})
 
 
 @app.route("/auth/register", methods=["POST"])
+@app.route("/api/auth/register", methods=["POST"])
 def register():
     """Register a new user."""
     data = request.get_json()
@@ -244,6 +247,7 @@ def register():
 
 
 @app.route("/auth/login", methods=["POST"])
+@app.route("/api/auth/login", methods=["POST"])
 def login():
     """Authenticate a user and return a JWT token."""
     data = request.get_json()
@@ -271,6 +275,7 @@ def login():
 
 
 @app.route("/auth/verify", methods=["GET"])
+@app.route("/api/auth/verify", methods=["GET"])
 @require_auth
 def verify_token():
     """Verify a JWT token and return the user info."""
@@ -278,6 +283,7 @@ def verify_token():
 
 
 @app.route("/users/me", methods=["GET"])
+@app.route("/api/users/me", methods=["GET"])
 @require_auth
 def get_my_profile():
     """Get the current user's profile."""
@@ -288,6 +294,7 @@ def get_my_profile():
 
 
 @app.route("/users/me", methods=["PUT"])
+@app.route("/api/users/me", methods=["PUT"])
 @require_auth
 def update_my_profile():
     """Update the current user's profile."""
@@ -304,6 +311,7 @@ def update_my_profile():
 
 
 @app.route("/users/<user_id>", methods=["GET"])
+@app.route("/api/users/<user_id>", methods=["GET"])
 def get_user(user_id):
     """Get a user by ID (public profile info only)."""
     user = user_store.find_by_id(user_id)
@@ -348,3 +356,5 @@ if __name__ == "__main__":
     debug = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
     logger.info(f"Starting user-service on port {port}")
     app.run(host="0.0.0.0", port=port, debug=debug)
+g)
+ug)

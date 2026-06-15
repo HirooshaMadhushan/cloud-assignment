@@ -364,12 +364,14 @@ store = create_store()
 
 
 @app.route("/health")
+@app.route("/api/products/health")
 def health():
     """Health check endpoint for Kubernetes liveness/readiness probes."""
     return jsonify({"status": "healthy", "service": "product-service"})
 
 
 @app.route("/ready")
+@app.route("/api/products/ready")
 def ready():
     """Readiness check — verifies the store is accessible."""
     try:
@@ -380,6 +382,7 @@ def ready():
 
 
 @app.route("/products", methods=["GET"])
+@app.route("/api/products", methods=["GET"])
 def list_products():
     """
     List all products.
@@ -392,6 +395,7 @@ def list_products():
 
 
 @app.route("/products/<product_id>", methods=["GET"])
+@app.route("/api/products/<product_id>", methods=["GET"])
 def get_product(product_id):
     """Get a single product by ID."""
     product = store.get_by_id(product_id)
@@ -401,6 +405,7 @@ def get_product(product_id):
 
 
 @app.route("/products", methods=["POST"])
+@app.route("/api/products", methods=["POST"])
 def create_product():
     """Create a new product."""
     data = request.get_json()
@@ -412,6 +417,7 @@ def create_product():
 
 
 @app.route("/products/<product_id>", methods=["PUT"])
+@app.route("/api/products/<product_id>", methods=["PUT"])
 def update_product(product_id):
     """Update an existing product."""
     data = request.get_json()
@@ -425,6 +431,7 @@ def update_product(product_id):
 
 
 @app.route("/products/<product_id>", methods=["DELETE"])
+@app.route("/api/products/<product_id>", methods=["DELETE"])
 def delete_product(product_id):
     """Delete a product."""
     if not store.delete(product_id):
@@ -434,6 +441,7 @@ def delete_product(product_id):
 
 
 @app.route("/products/<product_id>/stock", methods=["GET"])
+@app.route("/api/products/<product_id>/stock", methods=["GET"])
 def check_stock(product_id):
     """Check stock availability (called by order-service)."""
     product = store.get_by_id(product_id)
@@ -445,6 +453,7 @@ def check_stock(product_id):
 
 
 @app.route("/products/<product_id>/stock/decrement", methods=["POST"])
+@app.route("/api/products/<product_id>/stock/decrement", methods=["POST"])
 def decrement_stock(product_id):
     """Decrement stock after order placement (called by order-service)."""
     data = request.get_json() or {}
@@ -456,6 +465,7 @@ def decrement_stock(product_id):
 
 
 @app.route("/categories", methods=["GET"])
+@app.route("/api/categories", methods=["GET"])
 def list_categories():
     """List all unique product categories."""
     products = store.get_all()

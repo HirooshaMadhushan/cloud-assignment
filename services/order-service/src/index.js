@@ -109,12 +109,11 @@ async function publishOrderEvent(event) {
 // Routes
 // ---------------------------------------------------------------------------
 
-// Health check
+// Health checks (Root)
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'order-service' });
 });
 
-// Readiness check
 app.get('/ready', async (req, res) => {
   try {
     // Check product-service connectivity
@@ -125,8 +124,11 @@ app.get('/ready', async (req, res) => {
   }
 });
 
+// Create Router for /orders and /api/orders
+const orderRouter = express.Router();
+
 // List all orders (optionally filter by userId)
-app.get('/orders', (req, res) => {
+orderRouter.get('/', (req, res) => {
   let result = Array.from(orders.values());
   if (req.query.userId) {
     result = result.filter((o) => o.userId === req.query.userId);
@@ -137,7 +139,7 @@ app.get('/orders', (req, res) => {
 });
 
 // Get single order
-app.get('/orders/:orderId', (req, res) => {
+orderRouter.get('/:orderId', (req, res) => {
   const order = orders.get(req.params.orderId);
   if (!order) {
     return res.status(404).json({ error: 'Not Found', message: `Order ${req.params.orderId} not found` });
@@ -146,7 +148,7 @@ app.get('/orders/:orderId', (req, res) => {
 });
 
 // Create a new order
-app.post('/orders', async (req, res) => {
+orderRouter.post('/', async (req, res) => {
   try {
     const { userId, items, shippingAddress } = req.body;
 
@@ -247,7 +249,7 @@ app.post('/orders', async (req, res) => {
 });
 
 // Update order status
-app.patch('/orders/:orderId/status', async (req, res) => {
+orderRouter.patch('/:orderId/status', async (req, res) => {
   const order = orders.get(req.params.orderId);
   if (!order) {
     return res.status(404).json({ error: 'Not Found', message: `Order ${req.params.orderId} not found` });
@@ -283,6 +285,11 @@ app.patch('/orders/:orderId/status', async (req, res) => {
 app.get('/events', (req, res) => {
   res.json({ events: eventLog, count: eventLog.length });
 });
+
+// Mount router on both paths
+app.use('/orders', orderRouter);
+app.use('/api/orders', orderRouter);
+app.use('/api/orders/health', (req, res) => res.json({ status: 'healthy', service: 'order-service' }));
 
 // ---------------------------------------------------------------------------
 // Error handling
