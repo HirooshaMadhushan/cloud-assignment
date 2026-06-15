@@ -14,24 +14,30 @@ WORKDIR /usr/share/nginx/html
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
+# Create a custom nginx.conf that works for non-root
+RUN echo 'pid /tmp/nginx.pid;' > /etc/nginx/conf.d/pid.conf \
+    && sed -i 's|/var/run/nginx.pid|/tmp/nginx.pid|g' /etc/nginx/nginx.conf \
+    && sed -i 's|listen       80;|listen       8080;|g' /etc/nginx/conf.d/default.conf || true
+
 # Pre-create necessary directories and fix permissions for non-root user
 RUN mkdir -p /var/cache/nginx/client_temp \
              /var/cache/nginx/proxy_temp \
              /var/cache/nginx/fastcgi_temp \
              /var/cache/nginx/uwsgi_temp \
              /var/cache/nginx/scgi_temp \
+             /var/log/nginx \
+             /var/run/nginx \
     && chown -R appuser:appgroup /usr/share/nginx/html \
                                 /var/cache/nginx \
                                 /var/run \
-                                /var/log/nginx
-
-# Modify PID file location to a writable directory
-RUN sed -i 's|/var/run/nginx.pid|/var/run/nginx/nginx.pid|g' /etc/nginx/nginx.conf \
-    && mkdir -p /var/run/nginx \
-    && chown -R appuser:appgroup /var/run/nginx
+                                /var/log/nginx \
+                                /etc/nginx/conf.d
 
 COPY --from=builder /build/build .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Fix permissions for the copied config
+RUN chown appuser:appgroup /etc/nginx/conf.d/default.conf
 
 USER appuser
 EXPOSE 8080
