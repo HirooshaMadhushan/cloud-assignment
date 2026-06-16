@@ -132,3 +132,26 @@ resource "aws_iam_role_policy" "user_service" {
     }]
   })
 }
+
+# xray-daemon: Write traces to AWS X-Ray
+resource "aws_iam_role" "xray_daemon" {
+  name = "cloudmart-xray-role-${var.common_tags["Environment"]}"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:xray:xray-daemon"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "xray_daemon" {
+  role       = aws_iam_role.xray_daemon.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
