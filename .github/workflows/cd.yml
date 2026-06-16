@@ -68,6 +68,12 @@ jobs:
             done
           done
 
+      - name: Deploy X-Ray Daemon
+        run: |
+          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" k8s/base/xray.yaml
+          sed -i "s/<ENV>/staging/g" k8s/base/xray.yaml
+          kubectl apply -f k8s/base/xray.yaml
+
       - name: Deploy to staging via Helm
         run: |
           for SERVICE in product-service order-service user-service notification-service frontend; do
@@ -163,6 +169,12 @@ jobs:
               sleep 15
             done
           done
+
+      - name: Deploy X-Ray Daemon
+        run: |
+          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" k8s/base/xray.yaml
+          sed -i "s/<ENV>/prod/g" k8s/base/xray.yaml
+          kubectl apply -f k8s/base/xray.yaml
 
       - name: Deploy to production via Helm
         run: |
