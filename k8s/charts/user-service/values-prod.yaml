@@ -3,6 +3,7 @@ namespace: cloudmart-prod
 replicaCount: 2
 
 image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/user-service
   tag: latest
 
 resources:
@@ -16,6 +17,12 @@ resources:
 config:
   awsRegion: us-east-1
   rdsSecretName: cloudmart/prod/rds/user-service
+  dbBackend: postgres
+  dbHost: "cloudmart-postgres-prod.cm30s6swwvvj.us-east-1.rds.amazonaws.com"
+  dbPort: "5432"
+  dbUser: "cloudmart_user"
+  dbName: "cloudmart"
+  jwtSecret: "prod-secret-key-change-me"
 
 serviceAccount:
   irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-user-service-role-prod"

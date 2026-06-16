@@ -1,9 +1,10 @@
 namespace: cloudmart-prod
 
-replicaCount: 2
-
 image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/frontend
   tag: latest
+
+replicaCount: 2
 
 resources:
   requests:
