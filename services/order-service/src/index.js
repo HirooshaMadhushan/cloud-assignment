@@ -113,11 +113,24 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'order-service' });
 });
 
+app.get('/orders/health', (req, res) => {
+  res.json({ status: 'healthy', service: 'order-service' });
+});
+
 app.get('/api/orders/health', (req, res) => {
   res.json({ status: 'healthy', service: 'order-service' });
 });
 
 app.get('/ready', async (req, res) => {
+  try {
+    await axios.get(`${PRODUCT_SERVICE_URL}/health`, { timeout: 2000 });
+    res.json({ status: 'ready', service: 'order-service' });
+  } catch {
+    res.json({ status: 'ready', service: 'order-service', note: 'product-service unreachable but order-service is running' });
+  }
+});
+
+app.get('/orders/ready', async (req, res) => {
   try {
     await axios.get(`${PRODUCT_SERVICE_URL}/health`, { timeout: 2000 });
     res.json({ status: 'ready', service: 'order-service' });
