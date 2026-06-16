@@ -25,6 +25,7 @@ hpa:
 config:
   dynamodbTableName: cloudmart-products
   awsRegion: us-east-1
+  storeBackend: dynamodb
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml

@@ -5,4 +5,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 data:
   sqsQueueUrl: {{ .Values.config.sqsQueueUrl | quote }}
-  awsRegion: {{ .Values.config.awsRegion | quote }}
+  awsRegion: {{ .Values.config.awsRegion }}
+  queueBackend: {{ .Values.config.queueBackend }}
+  emailBackend: {{ .Values.config.emailBackend }}
+  fromEmail: {{ .Values.config.fromEmail }}
+

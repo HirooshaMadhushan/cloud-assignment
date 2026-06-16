@@ -20,11 +20,14 @@ spec:
     metadata:
       labels:
         app: order-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8002"
     spec:
       serviceAccountName: order-service
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 1001
       containers:
         - name: order-service
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -32,6 +35,15 @@ spec:
           ports:
             - containerPort: 8002
           env:
+            - name: XRAY_DAEMON_ADDRESS
+              value: "xray-service.xray:2000"
+            - name: PRODUCT_SERVICE_URL
+              value: "http://product-service:8001"
+            - name: QUEUE_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: order-service-config
+                  key: queueBackend
             - name: SQS_QUEUE_URL
               valueFrom:
                 configMapKeyRef:
@@ -58,8 +70,8 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8002
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3

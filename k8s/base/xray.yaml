@@ -1,8 +1,21 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xray
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xray-daemon
+  namespace: xray
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: xray-daemon
-  namespace: cloudmart-prod
+  namespace: xray
+  labels:
+    app: xray-daemon
 spec:
   selector:
     matchLabels:
@@ -12,13 +25,39 @@ spec:
       labels:
         app: xray-daemon
     spec:
+      serviceAccountName: xray-daemon
       containers:
         - name: xray-daemon
-          image: amazon/aws-xray-daemon
+          image: amazon/aws-xray-daemon:3.x
+          command: ["/usr/bin/xray", "-b", "0.0.0.0:2000"]
           ports:
-            - containerPort: 2000
+            - name: xray-ingest
+              containerPort: 2000
               protocol: UDP
           resources:
+            requests:
+              cpu: 32m
+              memory: 24Mi
             limits:
               cpu: 100m
-              memory: 256Mi
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xray-service
+  namespace: xray
+spec:
+  selector:
+    app: xray-daemon
+  clusterIP: None
+  ports:
+    - name: xray-ingest
+      port: 2000
+      protocol: UDP

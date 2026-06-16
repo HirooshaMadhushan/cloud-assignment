@@ -25,6 +25,7 @@ hpa:
 config:
   sqsQueueUrl: "" # Set in values-prod.yaml
   awsRegion: us-east-1
+  queueBackend: sqs
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml

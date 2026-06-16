@@ -20,6 +20,7 @@ spec:
     metadata:
       labels:
         app: frontend
+        project: cloudmart
     spec:
       securityContext:
         runAsNonRoot: true
@@ -30,7 +31,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 8080
+            - containerPort: 80
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
@@ -41,14 +42,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 80
             initialDelaySeconds: 15
             periodSeconds: 20
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
