@@ -15,6 +15,7 @@ resources:
 
 config:
   awsRegion: us-east-1
+  rdsSecretName: cloudmart/prod/rds/user-service
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-user-service-role"
+  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-user-service-role-prod"

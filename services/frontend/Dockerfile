@@ -2,9 +2,14 @@
 FROM node:20-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
-# Use `npm ci` when a lockfile exists, otherwise fall back to `npm install`
-# `npm ci` fails the build if package-lock.json is missing; falling back keeps builds working
-RUN npm ci || npm install --no-audit --no-fund --silent
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && if [ -f package-lock.json ]; then \
+         npm ci --prefer-offline --no-audit --no-fund; \
+       else \
+         npm install --prefer-offline --no-audit --no-fund; \
+       fi
 COPY . .
 RUN npm run build
 
@@ -13,14 +18,14 @@ FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN chown -R appuser:appgroup /usr/share/nginx/html /var/cache/nginx /var/run /var/log/nginx
 
-COPY --from=builder /build/dist .
+COPY --from=builder /build/build .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Fix ownership of the static files
+RUN chown -R appuser:appgroup /usr/share/nginx/html
+
 USER appuser
-EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:80/health || exit 1
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]

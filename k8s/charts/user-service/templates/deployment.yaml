@@ -32,6 +32,10 @@ spec:
           ports:
             - containerPort: 8003
           env:
+            - name: AWS_XRAY_DAEMON_ADDRESS
+              value: "xray-service.xray:2000"
+            - name: DB_BACKEND
+              value: {{ .Values.config.dbBackend | quote }}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -42,6 +46,31 @@ spec:
                 secretKeyRef:
                   name: user-service-db-credentials
                   key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-credentials
+                  key: DB_PORT
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-credentials
+                  key: DB_USER
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-credentials
+                  key: DB_NAME
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-credentials
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-db-credentials
+                  key: JWT_SECRET
             - name: AWS_REGION
               valueFrom:
                 configMapKeyRef:
@@ -58,13 +87,13 @@ spec:
             httpGet:
               path: /health
               port: 8003
-            initialDelaySeconds: 15
-            periodSeconds: 20
+            initialDelaySeconds: 30
+            periodSeconds: 30
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8003
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 3

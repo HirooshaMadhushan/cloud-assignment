@@ -14,9 +14,9 @@ resource "aws_cloudwatch_dashboard" "cloudmart" {
           region  = "us-east-1"
           title   = "CPU per Service"
           metrics = [
-            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-prod", "PodName", "product-service"],
-            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-prod", "PodName", "order-service"],
-            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-prod", "PodName", "user-service"]
+            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-${var.common_tags["Environment"]}", "PodName", "product-service"],
+            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-${var.common_tags["Environment"]}", "PodName", "order-service"],
+            ["ContainerInsights", "pod_cpu_utilization", "Namespace", "cloudmart-${var.common_tags["Environment"]}", "PodName", "user-service"]
           ]
           period = 60
           stat   = "Average"

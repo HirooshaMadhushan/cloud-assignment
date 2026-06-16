@@ -21,12 +21,29 @@ spec:
       serviceAccountName: notification-service
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 1001
       containers:
         - name: notification-service
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: AWS_XRAY_DAEMON_ADDRESS
+              value: "xray-service.xray:2000"
+            - name: QUEUE_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: queueBackend
+            - name: EMAIL_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: emailBackend
+            - name: FROM_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-service-config
+                  key: fromEmail
             - name: SQS_QUEUE_URL
               valueFrom:
                 configMapKeyRef:
@@ -45,10 +62,25 @@ spec:
               cpu: {{ .Values.resources.limits.cpu }}
               memory: {{ .Values.resources.limits.memory }}
           livenessProbe:
-            exec:
-              command:
-                - node
-                - -e
-                - process.exit(0)
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8004
             initialDelaySeconds: 15
-            periodSeconds: 20
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

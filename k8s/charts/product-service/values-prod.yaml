@@ -18,7 +18,7 @@ config:
   awsRegion: us-east-1
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-product-service-role"
+  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-product-service-role-prod"
 
 rollout:
   enabled: true

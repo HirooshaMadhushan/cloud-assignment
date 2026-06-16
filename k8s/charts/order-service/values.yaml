@@ -1,5 +1,5 @@
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/order-service
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart-staging/order-service
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -25,6 +25,7 @@ hpa:
 config:
   sqsQueueUrl: "" # Set in values-prod.yaml
   awsRegion: us-east-1
+  queueBackend: sqs
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml

@@ -1,19 +1,16 @@
-# --- Build stage ---
-FROM python:3.11-slim AS builder
-WORKDIR /build
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-# --- Runtime stage ---
 FROM python:3.11-slim
 WORKDIR /app
 
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
-COPY --from=builder /root/.local /home/appuser/.local
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-ENV PATH="/home/appuser/.local/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 USER appuser
 EXPOSE 8003
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

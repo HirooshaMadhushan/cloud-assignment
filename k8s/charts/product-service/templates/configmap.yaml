@@ -6,3 +6,4 @@ metadata:
 data:
   dynamodbTableName: {{ .Values.config.dynamodbTableName }}
   awsRegion: {{ .Values.config.awsRegion }}
+  storeBackend: {{ .Values.config.storeBackend }}

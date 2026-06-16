@@ -89,9 +89,9 @@ resource "aws_eks_node_group" "main" {
   instance_types = ["t3.small"]
 
   scaling_config {
-    desired_size = 1
-    min_size     = 1
-    max_size     = 2
+    desired_size = 2
+    min_size     = 2
+    max_size     = 4
   }
 
   update_config {
@@ -109,6 +109,8 @@ resource "aws_eks_node_group" "main" {
 
 resource "aws_launch_template" "eks_nodes" {
   name_prefix = "cloudmart-eks-nodes-"
+
+  vpc_security_group_ids = [var.eks_nodes_sg_id]
 
   metadata_options {
     http_endpoint               = "enabled"

@@ -3,6 +3,7 @@ namespace: cloudmart-staging
 replicaCount: 1
 
 image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/notification-service
   tag: latest
 
 resources:
@@ -18,4 +19,4 @@ config:
   awsRegion: us-east-1
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-notification-service-role"
+  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-notification-service-role-staging"

@@ -1,8 +1,9 @@
 namespace: cloudmart-staging
 
-replicaCount: 2
+replicaCount: 1
 
 image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/user-service
   tag: latest
 
 resources:
@@ -15,6 +16,12 @@ resources:
 
 config:
   awsRegion: us-east-1
+  dbBackend: postgres
+  dbHost: "cloudmart-postgres-staging.cm30s6swwvvj.us-east-1.rds.amazonaws.com"
+  dbPort: "5432"
+  dbUser: "cloudmart_user"
+  dbName: "cloudmart"
+  jwtSecret: "staging-secret-key"
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-user-service-role"
+  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-user-service-role-staging"

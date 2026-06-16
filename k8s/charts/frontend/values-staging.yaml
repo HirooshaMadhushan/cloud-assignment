@@ -1,8 +1,9 @@
 namespace: cloudmart-staging
 
-replicaCount: 2
+replicaCount: 1
 
 image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/frontend
   tag: latest
 
 resources:

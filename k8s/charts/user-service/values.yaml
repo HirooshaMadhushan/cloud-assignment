@@ -1,5 +1,5 @@
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/user-service
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart-staging/user-service
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -24,6 +24,12 @@ hpa:
 
 config:
   awsRegion: us-east-1
+  dbBackend: postgres
+  dbHost: "cloudmart-postgres-staging.cm30s6swwvvj.us-east-1.rds.amazonaws.com"
+  dbPort: "5432"
+  dbUser: "cloudmart_user"
+  dbName: "cloudmart"
+  jwtSecret: "cloudmart-secret-key-placeholder"
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml

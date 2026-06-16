@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-  HELM_TIMEOUT: 15m
+  HELM_TIMEOUT: 10m
 
 jobs:
   deploy-staging:
@@ -50,13 +50,29 @@ jobs:
           echo "=== Cluster nodes ==="
           kubectl get nodes -o wide
 
-      - name: Install Argo Rollouts CRDs
+      - name: Wait for images in ECR
         run: |
-          echo "Installing Argo Rollouts CRDs..."
-          kubectl create namespace argo-rollouts --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-          echo "Waiting for Argo Rollouts deployment to be ready..."
-          kubectl rollout status deployment/argo-rollouts -n argo-rollouts --timeout=5m || true
+          for SERVICE in product-service order-service user-service notification-service frontend; do
+            echo "Waiting for cloudmart/${SERVICE}:${{ github.sha }}..."
+            for i in {1..40}; do
+              if aws ecr describe-images \
+                --repository-name "cloudmart/${SERVICE}" \
+                --image-ids imageTag=${{ github.sha }} >/dev/null 2>&1; then
+                break
+              fi
+              if [ "$i" -eq 40 ]; then
+                echo "Image cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
+                exit 1
+              fi
+              sleep 15
+            done
+          done
+
+      - name: Deploy X-Ray Daemon
+        run: |
+          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" k8s/base/xray.yaml
+          sed -i "s/<ENV>/staging/g" k8s/base/xray.yaml
+          kubectl apply -f k8s/base/xray.yaml
 
       - name: Deploy to staging via Helm
         run: |
@@ -137,18 +153,29 @@ jobs:
           echo "=== Cluster nodes ==="
           kubectl get nodes -o wide
 
-      - name: Install Argo Rollouts CRDs
+      - name: Wait for images in ECR
         run: |
-          echo "Installing Argo Rollouts CRDs..."
-          kubectl create namespace argo-rollouts --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-          echo "Waiting for Argo Rollouts deployment to be ready..."
-          kubectl rollout status deployment/argo-rollouts -n argo-rollouts --timeout=5m || true
+          for SERVICE in product-service order-service user-service notification-service frontend; do
+            echo "Waiting for cloudmart/${SERVICE}:${{ github.sha }}..."
+            for i in {1..40}; do
+              if aws ecr describe-images \
+                --repository-name "cloudmart/${SERVICE}" \
+                --image-ids imageTag=${{ github.sha }} >/dev/null 2>&1; then
+                break
+              fi
+              if [ "$i" -eq 40 ]; then
+                echo "Image cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
+                exit 1
+              fi
+              sleep 15
+            done
+          done
 
-      - name: Create production namespace if not exists
+      - name: Deploy X-Ray Daemon
         run: |
-          kubectl create namespace cloudmart-prod --dry-run=client -o yaml | kubectl apply -f -
-          echo "Namespace cloudmart-prod is ready"
+          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g" k8s/base/xray.yaml
+          sed -i "s/<ENV>/prod/g" k8s/base/xray.yaml
+          kubectl apply -f k8s/base/xray.yaml
 
       - name: Deploy to production via Helm
         run: |

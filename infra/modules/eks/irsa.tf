@@ -8,7 +8,7 @@ resource "aws_iam_role" "product_service" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
@@ -25,11 +25,18 @@ resource "aws_iam_role_policy" "product_service" {
   role = aws_iam_role.product_service.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["dynamodb:GetItem","dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:DeleteItem","dynamodb:Scan","dynamodb:Query"]
-      Resource = [var.dynamodb_products_arn, "${var.dynamodb_products_arn}/index/*"]
-    }]
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:Scan", "dynamodb:Query"]
+        Resource = [var.dynamodb_products_arn, "${var.dynamodb_products_arn}/index/*"]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = var.kms_key_arn
+      }
+    ]
   })
 }
 
@@ -39,7 +46,7 @@ resource "aws_iam_role" "order_service" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
@@ -56,11 +63,18 @@ resource "aws_iam_role_policy" "order_service" {
   role = aws_iam_role.order_service.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["sqs:SendMessage","sqs:ReceiveMessage","sqs:DeleteMessage","sqs:GetQueueAttributes"]
-      Resource = var.sqs_orders_queue_arn
-    }]
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage", "sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+        Resource = var.sqs_orders_queue_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = var.kms_key_arn
+      }
+    ]
   })
 }
 
@@ -70,7 +84,7 @@ resource "aws_iam_role" "notification_service" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
@@ -90,12 +104,17 @@ resource "aws_iam_role_policy" "notification_service" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:GetQueueAttributes"]
+        Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
         Resource = var.sqs_orders_queue_arn
       },
       {
         Effect   = "Allow"
-        Action   = ["ses:SendEmail","ses:SendRawEmail"]
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = var.kms_key_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ses:SendEmail", "ses:SendRawEmail"]
         Resource = "*"
       }
     ]
@@ -108,7 +127,7 @@ resource "aws_iam_role" "user_service" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
@@ -125,10 +144,40 @@ resource "aws_iam_role_policy" "user_service" {
   role = aws_iam_role.user_service.id
   policy = jsonencode({
     Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+        Resource = var.rds_secret_arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = var.kms_key_arn
+      }
+    ]
+  })
+}
+
+# xray-daemon: Write traces to AWS X-Ray
+resource "aws_iam_role" "xray_daemon" {
+  name = "cloudmart-xray-role-${var.common_tags["Environment"]}"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = ["secretsmanager:GetSecretValue","secretsmanager:DescribeSecret"]
-      Resource = var.rds_secret_arn
+      Effect    = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:xray:xray-daemon"
+        }
+      }
     }]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "xray_daemon" {
+  role       = aws_iam_role.xray_daemon.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }

@@ -1,5 +1,5 @@
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart/product-service
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart-staging/product-service
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -25,6 +25,7 @@ hpa:
 config:
   dynamodbTableName: cloudmart-products
   awsRegion: us-east-1
+  storeBackend: dynamodb
 
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml
