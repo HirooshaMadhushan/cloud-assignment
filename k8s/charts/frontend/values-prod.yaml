@@ -1,7 +1,7 @@
 namespace: cloudmart-prod
 
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/frontend
+  repository: 143629080002.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/frontend
   tag: latest
 
 replicaCount: 2
@@ -15,5 +15,5 @@ resources:
     memory: "512Mi"
 
 ingress:
-  certificateArn: "arn:aws:acm:us-east-1:<AWS_ACCOUNT_ID>:certificate/prod-cert"
-  wafAclArn: "arn:aws:wafv2:us-east-1:<AWS_ACCOUNT_ID>:regional/webacl/cloudmart-waf/id"
+  certificateArn: "arn:aws:acm:us-east-1:143629080002:certificate/prod-cert"
+  wafAclArn: "arn:aws:wafv2:us-east-1:143629080002:regional/webacl/cloudmart-waf/id"

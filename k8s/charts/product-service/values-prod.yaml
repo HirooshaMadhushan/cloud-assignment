@@ -3,7 +3,7 @@ namespace: cloudmart-prod
 replicaCount: 2
 
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/product-service
+  repository: 143629080002.dkr.ecr.us-east-1.amazonaws.com/prod/cloudmart/product-service
   tag: latest
 
 resources:
@@ -23,7 +23,7 @@ seed:
   enabled: false
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-product-service-role-prod"
+  irsaRoleArn: "arn:aws:iam::143629080002:role/cloudmart-product-service-role-prod"
 
 rollout:
   enabled: false

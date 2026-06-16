@@ -9,7 +9,7 @@ metadata:
   name: xray-daemon
   namespace: xray
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-xray-role-<ENV>
+    eks.amazonaws.com/role-arn: arn:aws:iam::143629080002:role/cloudmart-xray-role-<ENV>
 ---
 apiVersion: apps/v1
 kind: DaemonSet

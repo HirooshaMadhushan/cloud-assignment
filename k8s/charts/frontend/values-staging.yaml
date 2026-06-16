@@ -3,7 +3,7 @@ namespace: cloudmart-staging
 replicaCount: 1
 
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/staging/cloudmart/frontend
+  repository: 143629080002.dkr.ecr.us-east-1.amazonaws.com/staging/cloudmart/frontend
   tag: latest
 
 resources:
@@ -15,5 +15,5 @@ resources:
     memory: "256Mi"
 
 ingress:
-  certificateArn: "arn:aws:acm:us-east-1:<AWS_ACCOUNT_ID>:certificate/staging-cert"
-  wafAclArn: "arn:aws:wafv2:us-east-1:<AWS_ACCOUNT_ID>:regional/webacl/cloudmart-waf-staging/id"
+  certificateArn: "arn:aws:acm:us-east-1:143629080002:certificate/staging-cert"
+  wafAclArn: "arn:aws:wafv2:us-east-1:143629080002:regional/webacl/cloudmart-waf-staging/id"

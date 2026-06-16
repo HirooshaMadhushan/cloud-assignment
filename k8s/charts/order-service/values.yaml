@@ -1,5 +1,5 @@
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cloudmart-staging/order-service
+  repository: 143629080002.dkr.ecr.us-east-1.amazonaws.com/cloudmart-staging/order-service
   tag: latest
   pullPolicy: IfNotPresent
 

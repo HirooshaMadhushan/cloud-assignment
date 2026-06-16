@@ -3,7 +3,7 @@ namespace: cloudmart-staging
 replicaCount: 1
 
 image:
-  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/staging/cloudmart/order-service
+  repository: 143629080002.dkr.ecr.us-east-1.amazonaws.com/staging/cloudmart/order-service
   tag: latest
 
 resources:
@@ -15,8 +15,8 @@ resources:
     memory: "256Mi"
 
 config:
-  sqsQueueUrl: "https://sqs.us-east-1.amazonaws.com/<AWS_ACCOUNT_ID>/cloudmart-orders-staging"
+  sqsQueueUrl: "https://sqs.us-east-1.amazonaws.com/143629080002/cloudmart-orders-staging"
   awsRegion: us-east-1
 
 serviceAccount:
-  irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-order-service-role-staging"
+  irsaRoleArn: "arn:aws:iam::143629080002:role/cloudmart-order-service-role-staging"

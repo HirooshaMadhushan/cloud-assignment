@@ -110,13 +110,28 @@ jobs:
           fi
           
           echo "Staging URL: http://${STAGING_URL}"
-          # Give ALB a moment to register targets
-          sleep 30
           
-          curl -f http://${STAGING_URL}/health || exit 1
-          curl -f http://${STAGING_URL}/api/products/health || exit 1
-          curl -f http://${STAGING_URL}/api/orders/health || exit 1
-          curl -f http://${STAGING_URL}/api/users/health || exit 1
+          # Retry loop for DNS propagation and service availability
+          echo "Verifying service health..."
+          SUCCESS=false
+          for i in {1..30}; do
+            echo "Attempt $i/30: Checking endpoints..."
+            if curl -sf http://${STAGING_URL}/health && \
+               curl -sf http://${STAGING_URL}/api/products/health && \
+               curl -sf http://${STAGING_URL}/api/orders/health && \
+               curl -sf http://${STAGING_URL}/api/users/health; then
+              echo "All services are healthy!"
+              SUCCESS=true
+              break
+            fi
+            echo "Waiting for service availability (DNS/Startup)..."
+            sleep 15
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "Smoke tests failed after 7.5 minutes"
+            exit 1
+          fi
 
   deploy-prod:
     name: Deploy to Production
@@ -218,9 +233,26 @@ jobs:
           fi
 
           echo "Production URL: https://${PROD_URL}"
-          # Give ALB a moment to register targets
-          sleep 30
-
-          for endpoint in /health /api/products/health /api/orders/health /api/users/health; do
-            curl -f https://${PROD_URL}${endpoint} || exit 1
+          
+          # Retry loop for DNS propagation and service availability
+          echo "Verifying service health..."
+          SUCCESS=false
+          for i in {1..30}; do
+            echo "Attempt $i/30: Checking endpoints..."
+            # Note: curl -k used if certificate is self-signed or not yet ready
+            if curl -sf https://${PROD_URL}/health && \
+               curl -sf https://${PROD_URL}/api/products/health && \
+               curl -sf https://${PROD_URL}/api/orders/health && \
+               curl -sf https://${PROD_URL}/api/users/health; then
+              echo "All services are healthy!"
+              SUCCESS=true
+              break
+            fi
+            echo "Waiting for service availability (DNS/Startup)..."
+            sleep 15
           done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "Smoke tests failed after 7.5 minutes"
+            exit 1
+          fi
