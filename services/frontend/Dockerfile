@@ -2,7 +2,14 @@
 FROM node:20-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
-RUN npm ci || npm install --no-audit --no-fund --silent
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000 \
+    && if [ -f package-lock.json ]; then \
+         npm ci --prefer-offline --no-audit --no-fund; \
+       else \
+         npm install --prefer-offline --no-audit --no-fund; \
+       fi
 COPY . .
 RUN npm run build
 
