@@ -16,6 +16,10 @@ resources:
 config:
   dynamodbTableName: cloudmart-products
   awsRegion: us-east-1
+  storeBackend: dynamodb
+
+seed:
+  enabled: false
 
 serviceAccount:
   irsaRoleArn: "arn:aws:iam::<AWS_ACCOUNT_ID>:role/cloudmart-product-service-role-prod"

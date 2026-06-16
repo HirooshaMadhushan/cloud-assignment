@@ -183,15 +183,21 @@ function App() {
   // Fetch products
   const fetchProducts = useCallback(async () => {
     try {
+      setError("");
       const params = new URLSearchParams();
       if (searchTerm) params.set("search", searchTerm);
       if (categoryFilter) params.set("category", categoryFilter);
       const url = `${API.products}${params.toString() ? "?" + params : ""}`;
       const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to load products");
+      }
       const data = await res.json();
       setProducts(data.products || []);
-    } catch {
-      setError("Failed to load products. Is the product-service running?");
+    } catch (err) {
+      setProducts([]);
+      setError(err.message || "Failed to load products. Is the product-service running?");
     }
   }, [searchTerm, categoryFilter]);
 

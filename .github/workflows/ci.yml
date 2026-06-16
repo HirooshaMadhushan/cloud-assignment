@@ -94,24 +94,30 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build image
-        working-directory: services/${{ matrix.service }}
         run: |
-          docker build -t $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }} .
+          # Determine environment based on branch
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            ENV="prod"
+          else
+            ENV="staging"
+          fi
+          echo "ENV=${ENV}" >> $GITHUB_ENV
+          docker build -t $ECR_REGISTRY/${ENV}/cloudmart/${{ matrix.service }}:${{ github.sha }} services/${{ matrix.service }}
 
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.ECR_REGISTRY }}/cloudmart/${{ matrix.service }}:${{ github.sha }}
+          image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ENV }}/cloudmart/${{ matrix.service }}:${{ github.sha }}
           format: table
           exit-code: 0          # Do not fail pipeline on vulnerabilities for now
           severity: CRITICAL
 
       - name: Push to ECR
         run: |
-          docker push $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }}
-          docker tag $ECR_REGISTRY/cloudmart/${{ matrix.service }}:${{ github.sha }} \
-                     $ECR_REGISTRY/cloudmart/${{ matrix.service }}:latest
-          docker push $ECR_REGISTRY/cloudmart/${{ matrix.service }}:latest
+          docker push $ECR_REGISTRY/${{ env.ENV }}/cloudmart/${{ matrix.service }}:${{ github.sha }}
+          docker tag $ECR_REGISTRY/${{ env.ENV }}/cloudmart/${{ matrix.service }}:${{ github.sha }} \
+                     $ECR_REGISTRY/${{ env.ENV }}/cloudmart/${{ matrix.service }}:latest
+          docker push $ECR_REGISTRY/${{ env.ENV }}/cloudmart/${{ matrix.service }}:latest
 
   validate-manifests:
     name: Validate K8s Manifests

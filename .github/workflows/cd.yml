@@ -52,16 +52,22 @@ jobs:
 
       - name: Wait for images in ECR
         run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            ENV="prod"
+          else
+            ENV="staging"
+          fi
           for SERVICE in product-service order-service user-service notification-service frontend; do
-            echo "Waiting for cloudmart/${SERVICE}:${{ github.sha }}..."
+            echo "Waiting for ${ENV}/cloudmart/${SERVICE}:${{ github.sha }}..."
             for i in {1..40}; do
               if aws ecr describe-images \
-                --repository-name "cloudmart/${SERVICE}" \
+                --repository-name "${ENV}/cloudmart/${SERVICE}" \
                 --image-ids imageTag=${{ github.sha }} >/dev/null 2>&1; then
                 break
               fi
               if [ "$i" -eq 40 ]; then
-                echo "Image cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
+                echo "Image ${ENV}/cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
                 exit 1
               fi
               sleep 15
@@ -155,16 +161,22 @@ jobs:
 
       - name: Wait for images in ECR
         run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            ENV="prod"
+          else
+            ENV="staging"
+          fi
           for SERVICE in product-service order-service user-service notification-service frontend; do
-            echo "Waiting for cloudmart/${SERVICE}:${{ github.sha }}..."
+            echo "Waiting for ${ENV}/cloudmart/${SERVICE}:${{ github.sha }}..."
             for i in {1..40}; do
               if aws ecr describe-images \
-                --repository-name "cloudmart/${SERVICE}" \
+                --repository-name "${ENV}/cloudmart/${SERVICE}" \
                 --image-ids imageTag=${{ github.sha }} >/dev/null 2>&1; then
                 break
               fi
               if [ "$i" -eq 40 ]; then
-                echo "Image cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
+                echo "Image ${ENV}/cloudmart/${SERVICE}:${{ github.sha }} was not pushed within 10 minutes"
                 exit 1
               fi
               sleep 15

@@ -4,7 +4,7 @@ locals {
 
 resource "aws_ecr_repository" "services" {
   for_each             = toset(local.services)
-  name                 = "cloudmart/${each.key}"
+  name                 = "${var.common_tags["Environment"]}/cloudmart/${each.key}"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 

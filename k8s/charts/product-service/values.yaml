@@ -27,6 +27,9 @@ config:
   awsRegion: us-east-1
   storeBackend: dynamodb
 
+seed:
+  enabled: false
+
 serviceAccount:
   irsaRoleArn: ""   # Override in values-prod.yaml
 
