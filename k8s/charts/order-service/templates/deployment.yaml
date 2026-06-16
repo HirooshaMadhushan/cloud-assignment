@@ -35,7 +35,7 @@ spec:
           ports:
             - containerPort: 8002
           env:
-            - name: XRAY_DAEMON_ADDRESS
+            - name: AWS_XRAY_DAEMON_ADDRESS
               value: "xray-service.xray:2000"
             - name: PRODUCT_SERVICE_URL
               value: "http://product-service:8001"

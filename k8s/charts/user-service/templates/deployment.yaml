@@ -32,7 +32,7 @@ spec:
           ports:
             - containerPort: 8003
           env:
-            - name: XRAY_DAEMON_ADDRESS
+            - name: AWS_XRAY_DAEMON_ADDRESS
               value: "xray-service.xray:2000"
             - name: DB_BACKEND
               value: {{ .Values.config.dbBackend | quote }}

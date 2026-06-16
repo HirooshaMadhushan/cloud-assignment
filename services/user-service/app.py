@@ -139,7 +139,7 @@ class PostgresUserStore:
     def _init_schema(self):
         with self._connect() as conn:
             with conn.cursor() as cur:
-                cur.execute(\"\"\"
+                cur.execute("""
                     CREATE TABLE IF NOT EXISTS users (
                         id           TEXT PRIMARY KEY,
                         email        TEXT UNIQUE NOT NULL,
@@ -150,7 +150,7 @@ class PostgresUserStore:
                         created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                         updated_at   TIMESTAMPTZ
                     )
-                \"\"\")
+                """)
             conn.commit()
 
     def _row_to_dict(self, row):

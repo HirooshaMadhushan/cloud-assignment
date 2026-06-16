@@ -37,7 +37,7 @@ spec:
           ports:
             - containerPort: 8001
           env:
-            - name: XRAY_DAEMON_ADDRESS
+            - name: AWS_XRAY_DAEMON_ADDRESS
               value: "xray-service.xray:2000"
             - name: STORE_BACKEND
               valueFrom:
